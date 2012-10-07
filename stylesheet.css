@@ -1,0 +1,10 @@
+textarea {
+  height: 100px;
+  width: 200px;
+}
+
+#todo {
+  float: right;
+  height: 100;
+  width: 200;
+}
