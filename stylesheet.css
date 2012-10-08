@@ -3,7 +3,7 @@ textarea {
   width: 200px;
 }
 
-#todo {
+.sidebar {
   float: right;
   height: 100;
   width: 200;
