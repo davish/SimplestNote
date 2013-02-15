@@ -13,8 +13,8 @@ This is just a little weekend projet I'll be working on this weekend. Had an ide
   - lets you login to the service.
 - `list: [tag]`
   - List all documents on SimplestNote, use the `all` tag for all documents.
-  - `this.`
-    - Type this command on the line of the file you want to open, and the file will be opened.
+- `this.`
+  - Type this command on the line of the file you want to open when list has been called, and the file will be opened.
 - `title: [title]`
   - adds a title to the document.
 - `tag: [tags]`
