@@ -77,7 +77,7 @@ var TA = document.getElementById("txt");
         commandFuncs.save.update("txt");
         commandFuncs.ajax.send({"command": "save", "data": doc});
       } else if (word == "logout.") {
-        console.log("logged out");
+        commandFuncs.ajax.send("logged out");
       } else if (word == "this.") {
         ;
       } else if (word == "help.") {
