@@ -1,6 +1,7 @@
 # SimplestNote
 
 ---
+*** title. tag. save. pretty simple. ***
 
 ***title. tag. save. pretty simple.***
 
@@ -14,11 +15,15 @@ This is just a little weekend projet I'll be working on this weekend. Had an ide
 - `list: [tag]`
   - List all documents on SimplestNote, use the `all` tag for all documents.
 - `this.`
+<<<<<<< HEAD
   - Type this command on the line of the file you want to open when list has been called, and the file will be opened.
+=======
+  - Type this command on the line of the file you want to open after calling `list`, and the file will be opened.
+>>>>>>> added TODO list to README
 - `title: [title]`
   - adds a title to the document.
 - `tag: [tags]`
-  - adds tags to a document.
+  - adds tags to a document. **note:** for simplicity's sake, only two tags are allowed per document.
 - `save.`
   - Saves the document.
 - `logout.`
@@ -27,3 +32,10 @@ This is just a little weekend projet I'll be working on this weekend. Had an ide
   - Shows the help for all the commands.
 - `about`
   - Don't really have to explain that one either.
+
+---
+
+todo:
+- [check] implement commands with no arguments.
+- []      implement commands with multiple arguments (Regular Expressions)
+- []      implement backend code
