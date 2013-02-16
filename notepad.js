@@ -24,27 +24,40 @@ function current_word(textarea) {
 }
 
 
+var doc = [];
 
-
-// var todo = false;
-
-var doc = ["troll"];
-
+var argRegEx = /(login|list|tag|title): (\w+|\d+)+ ?(\w+|\d+)*/;
 $(document).ready(function() {
   $("#txt").keyup(function(e) {
     var word = current_word('#txt');
+    // period
     if (e.which == 190) {
       if (word == "save.") {
         removeCommand("save.", "txt");
         doc = $("#txt").val().split("\n");
         $("#txt").val(doc.join("\n"));
         console.log(doc);
-    } else if (word == "logout.") {
+      } else if (word == "logout.") {
         console.log("logged out");
+      } else if (word == "this.") {
+
+      } else if (word == "help.") {
+
+      } else if (word == "about.") {
+
       }
-    }
+    } 
+    // colon
+    else if (e.which == 186) {
+
+    } 
+    // space
+    else if (e.which == 32) {
+
+    } 
+    // \n
     else if (e.which == 13) {
-      doc.push(current_line($("#txt")));
+
     }
   });
 });
