@@ -30,7 +30,7 @@ This is just a little weekend projet I'll be working on this weekend. Had an ide
   - pretty self-explanatory.
 - `help.`
   - Shows the help for all the commands.
-- `about`
+- `about.`
   - Don't really have to explain that one either.
 
 ---
