@@ -52,7 +52,7 @@ var commandFuncs = {
 
 var doc = [];
 
-var argRegEx = /(login|list|tag|title): (\w*|\d*| *)+/;
+var argRegEx = /(login|list|tag|title):\s([\w\d\s]+)/;
 
 
 $(document).ready(function() {
