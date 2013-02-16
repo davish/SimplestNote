@@ -9,8 +9,6 @@ function current_line(textarea) {
   return taval.substr(start, end - start);
 }
 
-
-
 /*
   * Some conventions:
     * When a textarea is being passed into a function, it's always passed in as the string
@@ -60,17 +58,17 @@ var doc = [];
 
 var argRegEx = /(login|list|tag|title):\s([\w\d\s]+)/;
 
+var TA = document.getElementById("txt");
 
-$(document).ready(function() {
-  $("#txt").keypress(function(e) {
+  TA.onkeypress = function(e) {
     if (e.which == 13) {
       var found = current_line('txt').match(argRegEx);
       if (found != null) {
         commandFuncs.ajax.send({"command": found[1], "data": found[2].split(" ")});
       }
     }
-  });
-  $("#txt").keyup(function(e) {
+  };
+  TA.onkeyup = function(e) {
     var word = current_line('txt');
     // period
     if (e.which == 190) {
@@ -95,10 +93,7 @@ $(document).ready(function() {
       }
     } 
 
-  });
-
-
-});
+  };
 
 function removeCommand(command, ta) { // Probably not the most well-named function, but it works.
   // removes the command string from the text area, so it doesn't get saved with everything else.

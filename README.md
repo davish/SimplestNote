@@ -34,5 +34,5 @@ This is just a little weekend projet I'll be working on this weekend. Had an ide
 todo:
 - [check] implement commands with no arguments.
 - [check] implement commands with multiple arguments (Regular Expressions)
-- []      implement text-insertion, preferably no jQuery
+- [check]      implement text-insertion, preferably no jQuery
 - []      implement backend code
