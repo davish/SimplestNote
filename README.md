@@ -1,7 +1,6 @@
 # SimplestNote
 
 ---
-*** title. tag. save. pretty simple. ***
 
 ***title. tag. save. pretty simple.***
 
