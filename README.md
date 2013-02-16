@@ -19,7 +19,7 @@ This is just a little weekend projet I'll be working on this weekend. Had an ide
 - `title: [title]`
   - adds a title to the document.
 - `tag: [tags]`
-  - adds tags to a document. **note:** for simplicity's sake, only two tags are allowed per document.
+  - adds tags to a document.
 - `save.`
   - Saves the document.
 - `logout.`

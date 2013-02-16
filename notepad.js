@@ -1,26 +1,12 @@
 function current_line(textarea) {
-  var $ta = $(textarea),
-      pos = $ta.getSelection().start,
-      taval = $ta.val(),
-      start = taval.lastIndexOf('\n', pos - 1) + 1
+  var ta = document.getElementById(textarea),
+      pos = ta.selectionStart;
+      taval = ta.value;
+      start = taval.lastIndexOf('\n', pos - 1) + 1,
       end = taval.indexOf('\n', pos);
-  if (end == -1) {
+  if (end == -1)
     end = taval.length;
-  }
-
-  return taval.substr(start, end-start);
-}
-function current_word(textarea) {
-  var $ta = $(textarea),
-      pos = $ta.getSelection().start,
-      taval = $ta.val(),
-      start = taval.lastIndexOf('\n', pos - 1) + 1
-      end = taval.indexOf(' ', pos);
-  if (end == -1) {
-    end = taval.length;
-  }
-
-  return taval.substr(start, end-start);
+  return taval.substr(start, end - start);
 }
 
 
@@ -29,18 +15,38 @@ function current_word(textarea) {
   * Some conventions:
     * When a textarea is being passed into a function, it's always passed in as the string
     * of the area's id.
+    * Textarea is always last argument of the function.
 */
 
 var commandFuncs = {
   "save": {
     "update": function(ta) {
-        doc = $("#" + ta).val().split("\n");
-        $("#" + ta).val(doc.join("\n"));
+        doc = document.getElementById(ta).value.split("\n");
+        document.getElementById.value = doc.join('\n');
     }
   },
   "util": {
-    "insertAtLine": function(line, ta) {
-      ; // pass for now
+    "insertAtLine": function(text, command, ta) {
+      var lineNum = this.findLineNumber(ta);
+      var taval = document.getElementById(ta).value;
+      var whatToInsert = text.split('\n');
+
+      // All this tempDoc shit is a horrible solution, just couldn't think of anything better.
+      var tempDoc = taval.split("\n");
+
+      for (var i = 0; i < whatToInsert.length; i++) {
+        tempDoc.splice(i + lineNum, 0, whatToInsert[i]);
+      }
+      document.getElementById(ta).value = tempDoc.join("\n");
+    },
+    "findLineNumber": function(ta) {
+      var taval = document.getElementById(ta);
+      var lineCount = 0;
+      for (var i = 0; i < taval.selectionStart; i++) {
+        if (taval.value.charAt(i) == '\n')
+          lineCount++;
+      }
+      return lineCount;
     }
   },
   "ajax": {
@@ -58,14 +64,14 @@ var argRegEx = /(login|list|tag|title):\s([\w\d\s]+)/;
 $(document).ready(function() {
   $("#txt").keypress(function(e) {
     if (e.which == 13) {
-      var found = current_line('#txt').match(argRegEx);
+      var found = current_line('txt').match(argRegEx);
       if (found != null) {
         commandFuncs.ajax.send({"command": found[1], "data": found[2].split(" ")});
       }
     }
   });
   $("#txt").keyup(function(e) {
-    var word = current_word('#txt');
+    var word = current_line('txt');
     // period
     if (e.which == 190) {
       if (word == "save.") {
@@ -75,24 +81,20 @@ $(document).ready(function() {
       } else if (word == "logout.") {
         console.log("logged out");
       } else if (word == "this.") {
-
+        ;
       } else if (word == "help.") {
-
+        commandFuncs.util.insertAtLine("This will be the help\nhelpint is my job", "txt");
       } else if (word == "about.") {
-
+        commandFuncs.util.insertAtLine("about dbh937\nhe is cool.", "txt");
       } else if (word == "doc.") {
         console.log(doc);
         removeCommand(word, "txt");
+      } else if (word == "clear.") {
+        document.getElementById("txt").value = "";
+        commandFuncs.save.update("txt");
       }
     } 
-    // colon
-    else if (e.which == 186) {
 
-    } 
-    // space
-    else if (e.which == 32) {
-
-    } 
   });
 
 
@@ -102,11 +104,6 @@ function removeCommand(command, ta) { // Probably not the most well-named functi
   // removes the command string from the text area, so it doesn't get saved with everything else.
   var t = document.getElementById(ta);
   var where = t.selectionStart;
-  var text = $("#" + ta).val();
-  var newText = [text.slice(0, where - command.length - 1), text.slice(where + 1)].join('');
-  $("#" + ta).val(newText);
+  var text = t.value;
+  t.value = [text.slice(0, where - command.length - 1), text.slice(where + 1)].join('');
 }
-
-
-
-
