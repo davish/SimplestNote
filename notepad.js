@@ -24,19 +24,54 @@ function current_word(textarea) {
 }
 
 
+
+/*
+  * Some conventions:
+    * When a textarea is being passed into a function, it's always passed in as the string
+    * of the area's id.
+*/
+
+var commandFuncs = {
+  "save": {
+    "update": function(ta) {
+        doc = $("#" + ta).val().split("\n");
+        $("#" + ta).val(doc.join("\n"));
+    }
+  },
+  "util": {
+    "insertAtLine": function(line, ta) {
+      ; // pass for now
+    }
+  },
+  "ajax": {
+    "send": function(data) {
+      console.log(data); // TODO: write backend code
+    }
+  }
+};
+
 var doc = [];
 
-var argRegEx = /(login|list|tag|title): (\w+|\d+)+ ?(\w+|\d+)*/;
+var argRegEx = /(login|list|tag|title): (\w*|\d*| *)+/;
+
+
 $(document).ready(function() {
+  $("#txt").keypress(function(e) {
+    if (e.which == 13) {
+      var found = current_line('#txt').match(argRegEx);
+      if (found != null) {
+        commandFuncs.ajax.send({"command": found[1], "data": found[2].split(" ")});
+      }
+    }
+  });
   $("#txt").keyup(function(e) {
     var word = current_word('#txt');
     // period
     if (e.which == 190) {
       if (word == "save.") {
-        removeCommand("save.", "txt");
-        doc = $("#txt").val().split("\n");
-        $("#txt").val(doc.join("\n"));
-        console.log(doc);
+        removeCommand(word, "txt");
+        commandFuncs.save.update("txt");
+        commandFuncs.ajax.send({"command": "save", "data": doc});
       } else if (word == "logout.") {
         console.log("logged out");
       } else if (word == "this.") {
@@ -45,6 +80,9 @@ $(document).ready(function() {
 
       } else if (word == "about.") {
 
+      } else if (word == "doc.") {
+        console.log(doc);
+        removeCommand(word, "txt");
       }
     } 
     // colon
@@ -55,19 +93,20 @@ $(document).ready(function() {
     else if (e.which == 32) {
 
     } 
-    // \n
-    else if (e.which == 13) {
-
-    }
   });
+
+
 });
 
-function removeCommand(command, ta) {
+function removeCommand(command, ta) { // Probably not the most well-named function, but it works.
+  // removes the command string from the text area, so it doesn't get saved with everything else.
   var t = document.getElementById(ta);
   var where = t.selectionStart;
   var text = $("#" + ta).val();
   var newText = [text.slice(0, where - command.length - 1), text.slice(where + 1)].join('');
   $("#" + ta).val(newText);
 }
+
+
 
 
