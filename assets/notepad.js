@@ -82,11 +82,8 @@ var strs = {
 }
 
 var doc = [];
-
 var argRegEx = /(login|list|tag|title):\s([\w\d\s]+)/;
-
-var thisRegEx = /([\w\d]+)\sthis./;
-
+var thisRegEx = /^([\w\d-]+)\sthis.$/;
 var TA = document.getElementById("txt");
 
   TA.onkeypress = function(e) {
