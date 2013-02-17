@@ -24,7 +24,7 @@ var funcs = {
   "util": {
     "isTempDoc": false, 
     "insertAtLine": function(text, ta, c, useTempDoc) {
-      removeCommand(c, ta);
+      funcs.util.removeCommandFromTxt(c, ta);
       funcs.save.update(ta);
       this.isTempDoc = useTempDoc;
       var lineNum = this.findLineNumber(ta);
@@ -32,7 +32,6 @@ var funcs = {
       var whatToInsert = text.split('\n');
 
 
-      // All this tempDoc shit is a horrible solution, just couldn't think of anything better.
       if (useTempDoc) {
         var tempDoc = taval.split("\n");
 
@@ -65,6 +64,13 @@ var funcs = {
       if (end == -1)
         end = taval.length;
       return taval.substr(start, end - start);
+    },
+    "removeCommandFromTxt": function(command, ta) {
+      // removes the command string from the text area, so it doesn't get saved with everything else.
+      var t = document.getElementById(ta);
+      var where = t.selectionStart;
+      var text = t.value;
+      t.value = [text.slice(0, where - command.length - 1), text.slice(where + 1)].join('');
     }
   },
   "ajax": {
@@ -101,11 +107,10 @@ var TA = document.getElementById("txt");
     }
   };
   TA.onkeyup = function(e) {
-    var word = funcs.util.current_line('txt');
-    // period
     if (e.which == 190) {
+      var word = funcs.util.current_line('txt');
       if (word == "save.") {
-        removeCommand(word, "txt");
+        funcs.util.removeCommandFromTxt(word, "txt");
         funcs.save.refresh("txt");
         funcs.ajax.send({"command": "save", "data": doc});
       } else if (word == "logout.") {
@@ -118,7 +123,7 @@ var TA = document.getElementById("txt");
         funcs.util.insertAtLine(strs.about, "txt", word, true);
       } else if (word == "doc.") {
         console.log(doc);
-        removeCommand(word, "txt");
+        funcs.util.removeCommandFromTxt(word, "txt");
       } else if (word == "clear.") {
         document.getElementById("txt").value = "";
         funcs.save.refresh("txt");
@@ -129,11 +134,3 @@ var TA = document.getElementById("txt");
     } 
 
   };
-
-function removeCommand(command, ta) { // Probably not the most well-named function, but it works.
-  // removes the command string from the text area, so it doesn't get saved with everything else.
-  var t = document.getElementById(ta);
-  var where = t.selectionStart;
-  var text = t.value;
-  t.value = [text.slice(0, where - command.length - 1), text.slice(where + 1)].join('');
-}
