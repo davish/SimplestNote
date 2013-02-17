@@ -16,6 +16,9 @@ var funcs = {
     },
     "redraw": function(ta) {
       document.getElementById(ta).value = doc.join('\n');
+    },
+    "set": function(str, ta) {
+      document.getElementById(ta).value = str;
     }
   },
   "util": {
@@ -68,19 +71,21 @@ var funcs = {
     "send": function(data) {
       console.log(data); // TODO: write backend code
       if(data.command == "list")
-        return ["doc1", "doc 2", "doc three"];
+        funcs.util.insertAtLine("doc1\ndoc3\ndoc5\n", "txt", "this.", false);
     }
   }
 };
 
 var strs = {
-  "help": "here are the commands:\n - login: [username] [pasword]\n\t- lets you login to the service.\n- list: [tag]\n\t- List all documents accessable to you on SimplestNote, use the 'all' tag for all documents.\n- this.\n\t- Type this command on the line of the file you want to open after calling list, and the file will be opened.\n- title: [title]\n\t- adds a title to the document.\n- tag: [tags]\n\t- adds tags to a document.\n- save.\n\t- Saves the document.\n- logout.\n\t- pretty self-explanatory.\n- help.\n\t- Shows the help for all the commands.\n- about.\n\t- Don't really have to explain that one either.\npress space to remove the help.",
+  "help": "here are the commands:\n - login: [username] [pasword]\n\t- lets you login to the service.\n- list: [tag]\n\t- List all documents accessable to you on SimplestNote, use the 'all' tag for all documents.\n- this.\n\t- Type this command on the line of the file you want to open after calling list, and the file will be opened.\n- title: [title]\n\t- adds a title to the document. Note: title can only be one word.\n- tag: [tags]\n\t- adds tags to a document.\n- save.\n\t- Saves the document.\n- logout.\n\t- pretty self-explanatory.\n- help.\n\t- Shows the help for all the commands.\n- about.\n\t- Don't really have to explain that one either.\npress space to remove the help.",
   "about": "SimplestNote\n------------\ntitle. tag. save. pretty simple.\n\nSimplestNote was created by 14 year old Davis Haupt. You can check the project out on github[1], and if you really like it, you can donate[2]!\n[1]: https://github.com/dbh937/SimplestNote\n[2]: insert paypal here.\npress space to make this go away."
 }
 
 var doc = [];
 
 var argRegEx = /(login|list|tag|title):\s([\w\d\s]+)/;
+
+var thisRegEx = /([\w\d]+)\sthis./;
 
 var TA = document.getElementById("txt");
 
@@ -89,6 +94,11 @@ var TA = document.getElementById("txt");
       var found = funcs.util.current_line('txt').match(argRegEx);
       if (found != null) {
         funcs.ajax.send({"command": found[1], "data": found[2].split(" ")});
+      } else {
+        var foundThis = funcs.util.current_line('txt').match(thisRegEx);
+        if (foundThis != null) {
+          funcs.ajax.send({"command": "load", "data": foundThis[1]});
+        }
       }
 
     }
@@ -102,7 +112,7 @@ var TA = document.getElementById("txt");
         funcs.save.refresh("txt");
         funcs.ajax.send({"command": "save", "data": doc});
       } else if (word == "logout.") {
-        funcs.ajax.send("logged out");
+        funcs.ajax.send({"command": "logout", "data": null});
       } else if (word == "this.") {
         console.log("this!");
       } else if (word == "help.") {
