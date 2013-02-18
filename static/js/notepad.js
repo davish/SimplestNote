@@ -74,16 +74,24 @@ var funcs = {
     }
   },
   "ajax": {
-    "send": function(data) {
-      console.log(data); // TODO: write backend code
-      if(data.command == "list")
-        funcs.util.insertAtLine("doc1\ndoc3\ndoc5\n", "txt", "this.", false);
-    }
+    "send": function(data) {      
+      var commandReq = new XMLHttpRequest();
+      commandReq.open("POST", "/command", false); // synchronous request; TODO: offline editing
+      var loaded = false;
+      commandReq.onload = function() {
+        funcs.ajax.returnVal = this.responseText;
+      };
+      commandReq.setRequestHeader("Content-type", "application/json")
+      var toSend = JSON.stringify(data);
+      commandReq.send(toSend);
+      return funcs.ajax.returnVal;
+    },
+    "returnVal": ''
   }
 };
 
 var strs = {
-  "help": "here are the commands:\n - login: [username] [pasword]\n\t- lets you login to the service.\n- list: [tag]\n\t- List all documents accessable to you on SimplestNote, use the 'all' tag for all documents.\n- this.\n\t- Type this command on the line of the file you want to open after calling list, and the file will be opened.\n- title: [title]\n\t- adds a title to the document. Note: title can only be one word.\n- tag: [tags]\n\t- adds tags to a document.\n- save.\n\t- Saves the document.\n- logout.\n\t- pretty self-explanatory.\n- help.\n\t- Shows the help for all the commands.\n- about.\n\t- Don't really have to explain that one either.\npress space to remove the help.",
+  "help": "here are the commands (type them on a new line):\n - login: [username] [pasword]\n\t- lets you login to the service.\n- list: [tag]\n\t- List all documents accessable to you on SimplestNote, use the 'all' tag for all documents.\n- this.\n\t- Type this command on the line of the file you want to open after calling list, and the file will be opened.\n- title: [title]\n\t- adds a title to the document. Note: title can only be one word.\n- tag: [tags]\n\t- adds tags to a document.\n- save.\n\t- Saves the document.\n- logout.\n\t- pretty self-explanatory.\n- help.\n\t- Shows the help for all the commands.\n- about.\n\t- Don't really have to explain that one either.\npress space to remove the help.",
   "about": "SimplestNote\n------------\ntitle. tag. save. pretty simple.\n\nSimplestNote was created by 14 year old Davis Haupt. You can check the project out on github[1], and if you really like it, you can donate[2]!\n[1]: https://github.com/dbh937/SimplestNote\n[2]: insert paypal here.\npress space to make this go away."
 }
 
@@ -95,15 +103,14 @@ var TA = document.getElementById("txt");
   TA.onkeypress = function(e) {
     if (e.which == 13) {
       var found = funcs.util.current_line('txt').match(argRegEx);
-      if (found != null) {
-        funcs.ajax.send({"command": found[1], "data": found[2].split(" ")});
+      if (found != null) {  // if it's any command w/ args
+        console.log(funcs.ajax.send({"command": found[1], "data": found[2].split(" ")}));
       } else {
         var foundThis = funcs.util.current_line('txt').match(thisRegEx);
-        if (foundThis != null) {
-          funcs.ajax.send({"command": "load", "data": foundThis[1]});
+        if (foundThis != null) { // if it's the `this.` command
+          console.log(funcs.ajax.send({"command": "load", "data": foundThis[1]}));
         }
       }
-
     }
   };
   TA.onkeyup = function(e) {
@@ -112,9 +119,9 @@ var TA = document.getElementById("txt");
       if (word == "save.") {
         funcs.util.removeCommandFromTxt(word, "txt");
         funcs.save.refresh("txt");
-        funcs.ajax.send({"command": "save", "data": doc});
+        console.log(funcs.ajax.send({"command": "save", "data": doc}));
       } else if (word == "logout.") {
-        funcs.ajax.send({"command": "logout", "data": null});
+        console.log(funcs.ajax.send({"command": "logout", "data": null}));
       } else if (word == "this.") {
         console.log("this!");
       } else if (word == "help.") {
@@ -132,7 +139,7 @@ var TA = document.getElementById("txt");
       funcs.save.redraw("txt");
       funcs.util.isTempDoc = false;
     } else if (e.which == 9) {
-      funcs.util.insertAtLine("  ", "txt", false);
+
     }
 
   };
