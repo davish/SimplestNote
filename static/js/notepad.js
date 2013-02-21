@@ -74,19 +74,19 @@ var funcs = {
     }
   },
   "ajax": {
-    "send": function(data) {      
+    "send": function(data, command, callback) {      
       var commandReq = new XMLHttpRequest();
-      commandReq.open("POST", "/command", false); // synchronous request; TODO: offline editing
-      var loaded = false;
+      commandReq.open("POST", "/command");
       commandReq.onload = function() {
-        funcs.ajax.returnVal = this.responseText;
+        console.log(this.responseText);
+        if (callback)
+          callback(JSON.parse(this.responseText));
       };
       commandReq.setRequestHeader("Content-type", "application/json")
       var toSend = JSON.stringify(data);
       commandReq.send(toSend);
       return funcs.ajax.returnVal;
     },
-    "returnVal": ''
   }
 };
 
@@ -104,24 +104,20 @@ var TA = document.getElementById("txt");
     if (e.which == 13) {
       var found = funcs.util.current_line('txt').match(argRegEx);
       if (found != null) {  // if it's any command w/ args
-        console.log(funcs.ajax.send({"command": found[1], "data": found[2].split(" ")}));
-      } else {
-        var foundThis = funcs.util.current_line('txt').match(thisRegEx);
-        if (foundThis != null) { // if it's the `this.` command
-          console.log(funcs.ajax.send({"command": "load", "data": foundThis[1]}));
-        }
+        funcs.ajax.send({"command": found[1], "data": found[2].split(" ")});
       }
     }
   };
   TA.onkeyup = function(e) {
     if (e.which == 190) {
+      console.log(funcs.util.current_line('txt'));
       var word = funcs.util.current_line('txt');
       if (word == "save.") {
         funcs.util.removeCommandFromTxt(word, "txt");
         funcs.save.refresh("txt");
-        console.log(funcs.ajax.send({"command": "save", "data": doc}));
+        funcs.ajax.send({"command": "save", "data": doc});
       } else if (word == "logout.") {
-        console.log(funcs.ajax.send({"command": "logout", "data": null}));
+        funcs.ajax.send({"command": "logout", "data": null});
       } else if (word == "this.") {
         console.log("this!");
       } else if (word == "help.") {
@@ -134,12 +130,16 @@ var TA = document.getElementById("txt");
       } else if (word == "clear.") {
         document.getElementById("txt").value = "";
         funcs.save.refresh("txt");
+      } else {
+        var foundThis = funcs.util.current_line('txt').match(thisRegEx);
+        if (foundThis != null) { // if it's the `this.` command
+          funcs.ajax.send({"command": "load", "data": foundThis[1]});
+        }
       }
-    } else if (e.which == 32 && funcs.util.isTempDoc) {
+    } 
+    else if (e.which == 32 && funcs.util.isTempDoc) {
       funcs.save.redraw("txt");
       funcs.util.isTempDoc = false;
-    } else if (e.which == 9) {
-
     }
 
   };
