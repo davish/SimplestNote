@@ -1,9 +1,10 @@
 exports.post = function (req, res) {
   console.log(req.body.command);
   var command = req.body.command;
-
+  var ajaxResponse = {"command": req.body.command, "todo": req.body.data}
   switch(command) {
     case "login":
+      
       break;
     case "list":
       
@@ -22,6 +23,5 @@ exports.post = function (req, res) {
   }
 
   res.set("Content-Type", "application/json");
-  var ajaxResponse = {"command": req.body.command, "todo": "gotta do this, now"}
   res.send(JSON.stringify(ajaxResponse));
 };
