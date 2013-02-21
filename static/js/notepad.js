@@ -24,7 +24,8 @@ var funcs = {
   "util": {
     "isTempDoc": false, 
     "insertAtLine": function(text, ta, c, useTempDoc) {
-      funcs.util.removeCommandFromTxt(c, ta);
+      if (c)
+        funcs.util.removeCommandFromTxt(c, ta);
       funcs.save.update(ta);
       this.isTempDoc = useTempDoc;
       var lineNum = this.findLineNumber(ta);
@@ -71,6 +72,9 @@ var funcs = {
       var where = t.selectionStart;
       var text = t.value;
       t.value = [text.slice(0, where - command.length - 1), text.slice(where + 1)].join('');
+    },
+    "remove_line": function(ta) {
+      doc.splice(funcs.util.findLineNumber(ta), 1);
     }
   },
   "ajax": {
@@ -104,7 +108,9 @@ var TA = document.getElementById("txt");
     if (e.which == 13) {
       var found = funcs.util.current_line('txt').match(argRegEx);
       if (found != null) {  // if it's any command w/ args
-        funcs.ajax.send({"command": found[1], "data": found[2].split(" ")});
+        funcs.ajax.send({"command": found[1], "data": found[2].split(" ")}, function(data) {
+          funcs.util.insertAtLine(data.todo, "txt", found[0], false);
+        });
       }
     }
   };
