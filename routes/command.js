@@ -1,10 +1,11 @@
+var MongoClient = require("mongodb").MongoClient;
+
 exports.post = function (req, res) {
-  console.log(req.body.command);
+  console.log(req.body);
   var command = req.body.command;
-  var ajaxResponse = {"command": req.body.command, "todo": req.body.data}
+  var ajaxResponse = {"command": req.body.command, "todo": ''}
   switch(command) {
     case "login":
-      
       break;
     case "list":
       
@@ -21,7 +22,6 @@ exports.post = function (req, res) {
       break;
 
   }
-
   res.set("Content-Type", "application/json");
   res.send(JSON.stringify(ajaxResponse));
 };

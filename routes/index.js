@@ -6,6 +6,6 @@ exports.index = function(req, res){
 };
 
 // Signup Page
-exports.signup = require("./signup");
 
 exports.command = require("./command");
+

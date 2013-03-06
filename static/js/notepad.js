@@ -1,4 +1,3 @@
-
 /*
   * Some conventions:
     * When a textarea is being passed into a function, it's always passed in as the string
@@ -12,23 +11,24 @@ var funcs = {
       this.redraw(ta);
     },
     "update": function(ta) {
-      doc = document.getElementById(ta).value.split("\n");
+      doc.content = document.getElementById(ta).value.split("\n");
     },
     "redraw": function(ta) {
-      document.getElementById(ta).value = doc.join('\n');
+      document.getElementById(ta).value = doc.content.join('\n');
     },
     "set": function(str, ta) {
-      document.getElementById(ta).value = str;
+      doc.content = str.split("\n");
+      this.redraw();
     }
   },
   "util": {
     "isTempDoc": false, 
     "insertAtLine": function(text, ta, c, useTempDoc) {
       if (c)
-        funcs.util.removeCommandFromTxt(c, ta);
+        funcs.util.removeFromLine(c, ta);
       funcs.save.update(ta);
       this.isTempDoc = useTempDoc;
-      var lineNum = this.findLineNumber(ta);
+      var lineNum = this.findLineNumber(ta) + 1;
       var taval = document.getElementById(ta).value;
       var whatToInsert = text.split('\n');
 
@@ -42,7 +42,7 @@ var funcs = {
         document.getElementById(ta).value = tempDoc.join("\n");
       } else {
         for (var i = 0; i < whatToInsert.length; i++) {
-          doc.splice(i + lineNum, 0, whatToInsert[i]);
+          doc.content.splice(i + lineNum, 0, whatToInsert[i]);
         }
         funcs.save.redraw("txt");
       }
@@ -66,7 +66,7 @@ var funcs = {
         end = taval.length;
       return taval.substr(start, end - start);
     },
-    "removeCommandFromTxt": function(command, ta) {
+    "removeFromLine": function(command, ta) {
       // removes the command string from the text area, so it doesn't get saved with everything else.
       var t = document.getElementById(ta);
       var where = t.selectionStart;
@@ -74,22 +74,27 @@ var funcs = {
       t.value = [text.slice(0, where - command.length - 1), text.slice(where + 1)].join('');
     },
     "remove_line": function(ta) {
-      doc.splice(funcs.util.findLineNumber(ta), 1);
+      doc.content.splice(funcs.util.findLineNumber(ta), 1);
     }
   },
   "ajax": {
-    "send": function(data, command, callback) {      
+    "send": function(data, command, toRemove) {
+
+      if (toRemove) {
+        funcs.util.removeFromLine(toRemove, 'txt')
+      }     
+
       var commandReq = new XMLHttpRequest();
       commandReq.open("POST", "/command");
       commandReq.onload = function() {
         console.log(this.responseText);
-        if (callback)
-          callback(JSON.parse(this.responseText));
+        
+        var res = JSON.parse(this.responseText);
+        funcs.util.insertAtLine(res.todo, 'txt', false, false);
       };
       commandReq.setRequestHeader("Content-type", "application/json")
       var toSend = JSON.stringify(data);
       commandReq.send(toSend);
-      return funcs.ajax.returnVal;
     },
   }
 };
@@ -99,7 +104,14 @@ var strs = {
   "about": "SimplestNote\n------------\ntitle. tag. save. pretty simple.\n\nSimplestNote was created by 14 year old Davis Haupt. You can check the project out on github[1], and if you really like it, you can donate[2]!\n[1]: https://github.com/dbh937/SimplestNote\n[2]: insert paypal here.\npress space to make this go away."
 }
 
+/* 
 var doc = [];
+var title = "";
+var tags = []; 
+*/
+
+var doc = {"title": "", "tag": [], "content": []}
+
 var argRegEx = /(login|list|tag|title):\s([\w\d\s]+)/;
 var thisRegEx = /^([\w\d-]+)\sthis.$/;
 var TA = document.getElementById("txt");
@@ -108,37 +120,47 @@ var TA = document.getElementById("txt");
     if (e.which == 13) {
       var found = funcs.util.current_line('txt').match(argRegEx);
       if (found != null) {  // if it's any command w/ args
-        funcs.ajax.send({"command": found[1], "data": found[2].split(" ")}, function(data) {
-          funcs.util.insertAtLine(data.todo, "txt", found[0], false);
-        });
+        
+        funcs.util.removeFromLine(found[0], 'txt');
+        
+       if (found[1] == "tag" || found[1] == "title") { // title and tag alter the document
+        doc[found[1]] = found.slice(2);
+        funcs.ajax.send({"command": found[1], "data": doc})
+       } 
+       else if (found[1] == "login" || found[1] == "list") { // list and login don't
+          funcs.ajax.send({"command": found[1], "data": found[2].split(" ")});
+       }
       }
     }
   };
   TA.onkeyup = function(e) {
     if (e.which == 190) {
-      console.log(funcs.util.current_line('txt'));
+//      console.log(funcs.util.current_line('txt'));
       var word = funcs.util.current_line('txt');
       if (word == "save.") {
-        funcs.util.removeCommandFromTxt(word, "txt");
+        funcs.util.removeFromLine(word, 'txt');
         funcs.save.refresh("txt");
         funcs.ajax.send({"command": "save", "data": doc});
-      } else if (word == "logout.") {
-        funcs.ajax.send({"command": "logout", "data": null});
-      } else if (word == "this.") {
-        console.log("this!");
-      } else if (word == "help.") {
-        funcs.util.insertAtLine(strs.help, "txt", word, true);
-      } else if (word == "about.") {
-        funcs.util.insertAtLine(strs.about, "txt", word, true);
-      } else if (word == "doc.") {
         console.log(doc);
-        funcs.util.removeCommandFromTxt(word, "txt");
-      } else if (word == "clear.") {
+      } 
+      else if (word == "logout.") {
+        funcs.util.removeFromLine(word, 'txt');
+        funcs.ajax.send({"command": "logout", "data": null});
+      } 
+      else if (word == "help.") {
+        funcs.util.insertAtLine(strs.help, "txt", word, true);
+      } 
+      else if (word == "about.") {
+        funcs.util.insertAtLine(strs.about, "txt", word, true);
+      } 
+      else if (word == "clear.") {
         document.getElementById("txt").value = "";
         funcs.save.refresh("txt");
-      } else {
+      } 
+      else {
         var foundThis = funcs.util.current_line('txt').match(thisRegEx);
         if (foundThis != null) { // if it's the `this.` command
+          funcs.save.set("");
           funcs.ajax.send({"command": "load", "data": foundThis[1]});
         }
       }
