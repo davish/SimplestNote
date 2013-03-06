@@ -101,7 +101,7 @@ var funcs = {
 
 var strs = {
   "help": "here are the commands (type them on a new line):\n - login: [username] [pasword]\n\t- lets you login to the service.\n- list: [tag]\n\t- List all documents accessable to you on SimplestNote, use the 'all' tag for all documents.\n- this.\n\t- Type this command on the line of the file you want to open after calling list, and the file will be opened.\n- title: [title]\n\t- adds a title to the document. Note: title can only be one word.\n- tag: [tags]\n\t- adds tags to a document.\n- save.\n\t- Saves the document.\n- logout.\n\t- pretty self-explanatory.\n- help.\n\t- Shows the help for all the commands.\n- about.\n\t- Don't really have to explain that one either.\npress space to remove the help.",
-  "about": "SimplestNote\n------------\ntitle. tag. save. pretty simple.\n\nSimplestNote was created by 14 year old Davis Haupt. You can check the project out on github[1], and if you really like it, you can donate[2]!\n[1]: https://github.com/dbh937/SimplestNote\n[2]: insert paypal here.\npress space to make this go away."
+  "about": "SimplestNote\n------------\ntitle. tag. save. pretty simple.\n\nSimplestNote was created by 14 year old Davis Haupt. You can check the project out on github[1], and if you really like it, you can donate[2]!\n[1]: https://github.com/dbh937/SimplestNote\n[2]: 1MV7hQeuM1eDYKeiVLSmzvD8gGk9efXgTC\npress space to make this go away."
 }
 
 /* 
