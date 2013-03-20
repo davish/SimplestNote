@@ -100,19 +100,16 @@ var funcs = {
 };
 
 var strs = {
-  "help": "here are the commands (type them on a new line):\n - login: [username] [pasword]\n\t- lets you login to the service.\n- list: [tag]\n\t- List all documents accessable to you on SimplestNote, use the 'all' tag for all documents.\n- this.\n\t- Type this command on the line of the file you want to open after calling list, and the file will be opened.\n- title: [title]\n\t- adds a title to the document. Note: title can only be one word.\n- tag: [tags]\n\t- adds tags to a document.\n- save.\n\t- Saves the document.\n- logout.\n\t- pretty self-explanatory.\n- help.\n\t- Shows the help for all the commands.\n- about.\n\t- Don't really have to explain that one either.\npress space to remove the help.",
-  "about": "SimplestNote\n------------\ntitle. tag. save. pretty simple.\n\nSimplestNote was created by 14 year old Davis Haupt. You can check the project out on github[1], and if you really like it, you can donate[2]!\n[1]: https://github.com/dbh937/SimplestNote\n[2]: 1MV7hQeuM1eDYKeiVLSmzvD8gGk9efXgTC\npress space to make this go away."
-}
+  "help": "Note: with the exception of `title:` and `tag:` commands, successful commands will dissapear, while if a command is unsuccessful, you will be prompted with the command again. \nFor example, if you did not enter the right password, `login:` will be shown again so you can enter the correct password.\nhere are the commands (type them on a new line):\n- help.\n\t- Shows the help for all the commands.\n- about.\n\t- learn more about the author of this wonderful webapp.\n- login: [username] [pasword]\n\t- lets you login to the service.\n\t- `logout.` does what you think it would.\n- signup: [username] [password]\n\t- signs up a user with the given username and password.\n- list: [tag]\n\t- List all documents accessable to you on SimplestNote, use the 'all' tag for all documents.\n\t- this.\n\t\t- Type this command on the same line of the file name you want to open to open the file.\n\t\t- example: \n\t\t\thi_world\n\t\t\tsecond_file this.\n\t\t\tthird_file\n\t\t- after hitting enter on the second line, second_file would be opened.\n- title: [title]\n\t- adds a title to the document. Note: Title can only be words can only be separated by underscores. no spaces.\n- tag: [tags]\n\t- adds tags to a document.\n- save.\n\t- Saves the document.\n",
+  "about": "SimplestNote\n------------\ntitle. tag. save. pretty simple.\n\nSimplestNote was created by 14 year old Davis Haupt. You can check the project out on github[1], and if you really like it, you can donate[2]!\n[1]: https://github.com/dbh937/SimplestNote\n[2]: Bitcoin Address: 1MV7hQeuM1eDYKeiVLSmzvD8gGk9efXgTC\n-------\n",
+  "typeToClear": "\n***Type any key to take this away***\n"
+  //"both":  "SimplestNote\n------------\ntitle. tag. save. pretty simple.\n\nSimplestNote was created by 14 year old Davis Haupt. You can check the project out on github[1], and if you really like it, you can donate[2]!\n[1]: https://github.com/dbh937/SimplestNote\n[2]: Bitcoin Address: 1MV7hQeuM1eDYKeiVLSmzvD8gGk9efXgTC \n--------\nhere are the commands (type them on a new line):\n- help.\n\t- Shows the help for all the commands.\n- about.\n\t- learn more about the author of this wonderful webapp.\n- login: [username] [pasword]\n\t- lets you login to the service.\n\t- `logout.` does what you think it would.\n- list: [tag]\n\t- List all documents accessable to you on SimplestNote, use the 'all' tag for all documents.\n\t- this.\n\t\t- Type this command on the same line of the file name you want to open to open the file.\n\t\t- example: \n\t\t\thi_world\n\t\t\tsecond_file this.\n\t\t\tthird_file\n\t\t- after hitting enter on the second line, second_file would be opened.\n- title: [title]\n\t- adds a title to the document. Note: Title can only be words can only be separated by underscores. no spaces.\n- tag: [tags]\n\t- adds tags to a document.\n- save.\n\t- Saves the document.\n\ntype any key to remove the help.",
 
-/* 
-var doc = [];
-var title = "";
-var tags = []; 
-*/
+}
 
 var doc = {"title": "", "tag": [], "content": []}
 
-var argRegEx = /(login|list|tag|title):\s([\w\d\s]+)/;
+var argRegEx = /(login|signup|list|tag|title):\s([\w\d\s]+)/;
 var thisRegEx = /^([\w\d-]+)\sthis.$/;
 var TA = document.getElementById("txt");
 
@@ -127,7 +124,7 @@ var TA = document.getElementById("txt");
         doc[found[1]] = found.slice(2);
         funcs.ajax.send({"command": found[1], "data": doc})
        } 
-       else if (found[1] == "login" || found[1] == "list") { // list and login don't
+       else if (found[1] == "login" || found[1] == "list" || found[1] == "signup") { // list and login don't
           funcs.ajax.send({"command": found[1], "data": found[2].split(" ")});
        }
       }
@@ -148,10 +145,10 @@ var TA = document.getElementById("txt");
         funcs.ajax.send({"command": "logout", "data": null});
       } 
       else if (word == "help.") {
-        funcs.util.insertAtLine(strs.help, "txt", word, true);
+        funcs.util.insertAtLine(strs.help + strs.typeToClear, "txt", word, true);
       } 
       else if (word == "about.") {
-        funcs.util.insertAtLine(strs.about, "txt", word, true);
+        funcs.util.insertAtLine(strs.about + strs.typeToClear, "txt", word, true);
       } 
       else if (word == "clear.") {
         document.getElementById("txt").value = "";
@@ -165,7 +162,7 @@ var TA = document.getElementById("txt");
         }
       }
     } 
-    else if (e.which == 32 && funcs.util.isTempDoc) {
+    else if (funcs.util.isTempDoc) {
       funcs.save.redraw("txt");
       funcs.util.isTempDoc = false;
     }

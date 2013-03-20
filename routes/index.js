@@ -8,4 +8,3 @@ exports.index = function(req, res){
 // Signup Page
 
 exports.command = require("./command");
-
