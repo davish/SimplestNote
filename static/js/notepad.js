@@ -16,9 +16,13 @@ var funcs = {
     "redraw": function(ta) {
       document.getElementById(ta).value = doc.content.join('\n');
     },
-    "set": function(str, ta) {
+    "setContent": function(str, ta) {
       doc.content = str.split("\n");
-      this.redraw();
+      this.redraw('txt');
+    },
+    "setDoc": function(d, ta) {
+      doc = d;
+      this.redraw('txt');
     }
   },
   "util": {
@@ -86,11 +90,14 @@ var funcs = {
 
       var commandReq = new XMLHttpRequest();
       commandReq.open("POST", "/command");
-      commandReq.onload = function() {
-        console.log(this.responseText);
-        
-        var res = JSON.parse(this.responseText);
-        funcs.util.insertAtLine(res.todo, 'txt', false, false);
+      commandReq.onload = function() { 
+        var res = JSON.parse(this.responseText); 
+        if (res.doc) {
+          funcs.save.setDoc(res.doc, 'txt');
+          console.log(doc);
+        }
+        if (res.todo)
+          funcs.util.insertAtLine(res.todo, 'txt', false, false);
       };
       commandReq.setRequestHeader("Content-type", "application/json")
       var toSend = JSON.stringify(data);
@@ -107,9 +114,9 @@ var strs = {
 
 }
 
-var doc = {"title": "", "tag": [], "content": []}
+var doc = {"title": "", "tag": [], "content": [], "id": ""}
 
-var argRegEx = /(login|signup|list|tag|title):\s([\w\d\s]+)/;
+var argRegEx = /(login|signup|list|tag|title):\s([\w\d\s_]+)/;
 var thisRegEx = /^([\w\d-]+)\sthis.$/;
 var TA = document.getElementById("txt");
 
@@ -117,28 +124,36 @@ var TA = document.getElementById("txt");
     if (e.which == 13) {
       var found = funcs.util.current_line('txt').match(argRegEx);
       if (found != null) {  // if it's any command w/ args
-        
-        funcs.util.removeFromLine(found[0], 'txt');
-        
-       if (found[1] == "tag" || found[1] == "title") { // title and tag alter the document
-        doc[found[1]] = found.slice(2);
-        funcs.ajax.send({"command": found[1], "data": doc})
-       } 
-       else if (found[1] == "login" || found[1] == "list" || found[1] == "signup") { // list and login don't
-          funcs.ajax.send({"command": found[1], "data": found[2].split(" ")});
-       }
+        var c;
+        var d;
+        if (found[1] == "title") { // title and tag alter the document
+          doc[found[1]] = found.slice(2);
+          c = "title";
+          funcs.save.refresh("txt");
+          d = doc;
+        } 
+        else if (found[1] == "tag") {
+          doc["tag"] = found[2].split(' ');
+          c = "tag"
+          funcs.save.refresh("txt");
+          d = doc;
+        }
+        else if (found[1] == "login" || found[1] == "list" || found[1] == "signup") { // list and login don't alter document
+          funcs.util.removeFromLine(found[0], 'txt');
+          c = found[1];
+          d = found[2].split(" ");
+        }
+        funcs.ajax.send({"command": c, "data": d});
       }
     }
   };
   TA.onkeyup = function(e) {
     if (e.which == 190) {
-//      console.log(funcs.util.current_line('txt'));
       var word = funcs.util.current_line('txt');
-      if (word == "save.") {
+      if (word == "save." || word == "s.") {
         funcs.util.removeFromLine(word, 'txt');
         funcs.save.refresh("txt");
         funcs.ajax.send({"command": "save", "data": doc});
-        console.log(doc);
       } 
       else if (word == "logout.") {
         funcs.util.removeFromLine(word, 'txt');
@@ -157,7 +172,7 @@ var TA = document.getElementById("txt");
       else {
         var foundThis = funcs.util.current_line('txt').match(thisRegEx);
         if (foundThis != null) { // if it's the `this.` command
-          funcs.save.set("");
+          funcs.save.setContent("");
           funcs.ajax.send({"command": "load", "data": foundThis[1]});
         }
       }
