@@ -13,7 +13,6 @@ var docSchema = new mongoose.Schema({
 var Document = mongoose.model('Document', docSchema);
 
 exports.post = function (req, res) {
-  console.log(req.body.command);
   var ajaxResponse = {"command": req.body.command, "todo": ''};
   switch(req.body.command) {
     case "login":
@@ -25,16 +24,13 @@ exports.post = function (req, res) {
     case "load":
       break;
     case "title":
+      // N/a
       break;
     case "tag":
+      // Nothing should go here...
       break;
     case "save":
-      // if (data.id) { // if there's an ID, i.e. if the file's already in the system
-      //   createOrEditDoc(mongoose.Types.ObjectId.createFromHexString(data.id, req.body.data), req.body.data);
-      // }
-      // else {
-        createOrEditDoc(req.body.data, res);
-      // }
+        createOrEditDoc(req.body.data, res); // Create a new document or just update an existing one
       break;
     case "logout":
       break;
@@ -58,27 +54,29 @@ function createOrEditDoc(data, res) {
   db.once('open', function callback () {
     var doc;
     data.user = '';
-    if (!data.id) { // if the id isn't defined, i.e. the document isn't in the database
-      delete data.id;
-      doc = new Document(data); // create a new document
+    if (data.id) { // if the document exists
+      Document.findByIdAndUpdate(data.id, data, function(err, doc) {
+        if (!err) {
+          console.log("updated!");
+          mongoose.disconnect(function() {
+            sendToClient(res, {"command": "save", "todo": "", "doc": data});
+          });
+        }
+      });
+
     }
     else {
-      delete data.id;
       doc = new Document(data); // for now it's the same.
+      doc.save(function(err) {
+        if (!err) {
+          mongoose.disconnect(function() {
+            var Id = doc._id.toHexString();
+            data.id = Id;
+            sendToClient(res, {"command": "save", "todo": "", "doc": data});
+          });
+        }
+      });
     }
-
-    doc.save(function(err) {
-      if (!err) {
-        mongoose.disconnect(function() {
-          var Id = doc._id.toHexString();
-          console.log(Id);
-          data.id = Id;
-          sendToClient(res, {"command": "save", "todo": "", "doc": data});
-        });
-
-      }
-
-    });
   });
 
 }
