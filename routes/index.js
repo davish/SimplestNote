@@ -5,6 +5,4 @@ exports.index = function(req, res){
   res.render('notepad');
 };
 
-// Signup Page
-
 exports.command = require("./command");

@@ -1,4 +1,7 @@
+
 var mongoose = require('mongoose');
+var validate = require("validate");
+
 
 var Id = "";
 
@@ -10,12 +13,21 @@ var docSchema = new mongoose.Schema({
   content: [String]
 });
 
+var userSchema = new mongoose.Schema({
+  name: String,
+  hash: String
+});
+
 var Document = mongoose.model('Document', docSchema);
+var User = mongoose.model('User', userSchema);
+
+
 exports.post = function (req, res) {
   switch(req.body.command) {
     case "login":
       break;
     case "signup":
+      createNewUser(req.body.data[0], req.body.data[1], res);
       break;
     case "list":
       getListOfDocs(req.body.data, res, "");
@@ -40,6 +52,41 @@ exports.post = function (req, res) {
 };
 
 
+function createNewUser(name, pswd, res) {
+  var passwordHash = validate.makePswdHash(name, pswd);
+
+  mongoose.connect('mongodb://localhost/test');
+  var db = mongoose.connection;
+
+  db.once("open", function() {
+    User.find({name: name}, function(err, docs) {
+      if (!err) {
+        if (docs[0] == undefined) {
+          u = new User({"name": name, "hash": passwordHash});
+          u.save(function(err) {
+            if (!err) {
+              mongoose.disconnect(function() {
+                res.cookie("name", name, {signed: true});
+                sendToClient(res, {})
+              });
+            } else {
+              mongoose.disconnect();
+            }
+          });
+        } else {
+          mongoose.disconnect(function() {
+            sendToClient(res, {"command": "signup", "todo": "signup: "});
+          });
+        }
+      } else {
+        console.log(err);
+      }
+    }); 
+  });
+  
+}
+
+
 // ajaxResponse = {"command": req.body.command, "todo": [text to insert], "doc": [new/updated document]};
 function sendToClient(res, ajaxResponse) {
   res.set("Content-Type", "application/json");
@@ -61,8 +108,6 @@ function loadDoc(f, res, user) {
                                                                 "content": doc.content}
                                                               });
       }
-
-
       mongoose.disconnect();
     });
   });
@@ -115,6 +160,8 @@ function createOrEditDoc(data, res, user) {
             data.id = Id;
             sendToClient(res, {"command": "save", "todo": "", "doc": data});
           });
+        } else {
+          mongoose.disconnect();
         }
       });
     }

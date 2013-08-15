@@ -32,7 +32,7 @@ var funcs = {
         funcs.util.removeFromLine(c, ta);
       funcs.save.update(ta);
       this.isTempDoc = useTempDoc;
-      var lineNum = this.findLineNumber(ta) + 1;
+      var lineNum = this.findLineNumber(ta); // + 1?
       var taval = document.getElementById(ta).value;
       var whatToInsert = text.split('\n');
 
