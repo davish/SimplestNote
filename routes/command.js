@@ -25,6 +25,7 @@ var User = mongoose.model('User', userSchema);
 exports.post = function (req, res) {
   switch(req.body.command) {
     case "login":
+      signInUser(req.body.data[0], req.body.data[1], res);
       break;
     case "signup":
       createNewUser(req.body.data[0], req.body.data[1], res);
@@ -57,6 +58,44 @@ exports.post = function (req, res) {
 function sendToClient(res, ajaxResponse) {
   res.set("Content-Type", "application/json");
   res.send(JSON.stringify(ajaxResponse));
+}
+
+function signInUser(name, pswd, res) {
+  mongoose.connect("mongodb://localhost/test");
+  var db = mongoose.connection;
+  db.once("open", function() {
+    // find the user in the database
+    User.find({"name": name}, null, null, function(err, docs) {
+      if (!err) {
+        if (docs[0]) {
+          // If there is a user by the username
+          var usr = docs[0];
+          var commaLocation = usr.hash.indexOf(",");
+          var s = usr.hash.substring(commaLocation + 1);// Plaintext of the salt
+
+          if (validate.makePswdHash(name, pswd, s) == usr.hash) {
+            mongoose.disconnect(function() {
+              res.cookie({"name": name});
+              sendToClient(res, {});
+            });
+          } else {
+            mongoose.disconnect(function() {
+              sendToClient(res, {"command": "login", "todo": "login: "});
+            });
+          }
+
+        } else {
+          mongoose.disconnect(function() {
+            sendToClient(res, {"command": "login", "todo": "login: "});
+          });
+        }
+      } else {
+        mongoose.disconnect(function() {
+          sendToClient(res, {"command": "login", "todo": "login: "});
+        });
+      }
+    }); 
+  });
 }
 
 function createNewUser(name, pswd, res) {
