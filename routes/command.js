@@ -33,6 +33,7 @@ exports.post = function (req, res) {
       getListOfDocs(req.body.data, res, "");
       break;
     case "load":
+      // replace the contents of the page with the contents of the requested document.
       loadDoc(req.body.data, res, "");
       break;
     case "title":
@@ -45,12 +46,18 @@ exports.post = function (req, res) {
         createOrEditDoc(req.body.data, res, ""); // Create a new document or just update an existing one
       break;
     case "logout":
+      // Delete the cookie containing the logged in username, logging out the user.
+      res.clearCookie("name");
+      sendToClient(res, {});
       break;
-
   }
- 
 };
 
+// ajaxResponse = {"command": req.body.command, "todo": [text to insert], "doc": [new/updated document]};
+function sendToClient(res, ajaxResponse) {
+  res.set("Content-Type", "application/json");
+  res.send(JSON.stringify(ajaxResponse));
+}
 
 function createNewUser(name, pswd, res) {
   var passwordHash = validate.makePswdHash(name, pswd);
@@ -85,14 +92,6 @@ function createNewUser(name, pswd, res) {
   });
   
 }
-
-
-// ajaxResponse = {"command": req.body.command, "todo": [text to insert], "doc": [new/updated document]};
-function sendToClient(res, ajaxResponse) {
-  res.set("Content-Type", "application/json");
-  res.send(JSON.stringify(ajaxResponse));
-}
-
 
 function loadDoc(f, res, user) {
 
