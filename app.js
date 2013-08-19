@@ -15,7 +15,7 @@ app.configure(function(){
   app.set('views', __dirname + '/views');
   app.set('view engine', 'html');
   app.use(express.bodyParser());
-  app.use(express.cookieParser("THISISASECRET"));
+  app.use(express.cookieParser()); // For some reason signed cookies weren't working, so I'm going to validate cookies myself. (validate.js)
   app.use(express.favicon());
   app.use(express.logger('dev'));
   app.use(express.methodOverride());
