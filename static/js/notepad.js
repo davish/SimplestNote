@@ -76,20 +76,12 @@ var funcs = {
       var cursor = t.selectionStart;
       var text = t.value;
       t.value = [text.slice(0, cursor - command.length - 1), text.slice(cursor + 1)].join('');
-    },
-    "removeLine": function(line, ta) {
-      if (line == 0) {
-        doc.content.slice(1);
-      } else {
-        doc.content.splice(line, 1);
-      }
-      funcs.save.redraw(ta);
     }
   },
   "ajax": {
     "send": function(data, command, toRemove) {
       if (toRemove) {
-        funcs.util.removeLine(funcs.util.getCurrentLine("txt") - 1, 'txt');
+        funcs.util.removeFromLine(toRemove, 'txt');
       }     
       var commandReq = new XMLHttpRequest();
       commandReq.open("POST", "/command");
@@ -123,7 +115,7 @@ var TA = document.getElementById("txt");
 
 TA.onkeypress = function(e) {
   if (e.which == 13) {
-    var found = funcs.util.findLineNumber('txt').match(argRegEx);
+    var found = funcs.util.getCurrentLine('txt').match(argRegEx);
     if (found != null) {  // if it's any command w/ args
       var c;
       var d;
@@ -140,7 +132,7 @@ TA.onkeypress = function(e) {
         d = doc;
       }
       else if (found[1] == "login" || found[1] == "list" || found[1] == "signup") { // list and login don't alter document
-        funcs.util.removeLine(funcs.util.findLineNumber('txt') - 1,'txt');
+        funcs.util.removeFromLine(found[1], 'txt');
         c = found[1];
         d = found[2].split(" ");
       }
@@ -152,12 +144,12 @@ TA.onkeypress = function(e) {
     if (e.which == 190) {
       var word = funcs.util.getCurrentLine('txt');
       if (word == "save." || word == "s.") {
-        funcs.util.removeLine(funcs.util.findLineNumber('txt'), 'txt');
+        funcs.util.removeFromLine(word, 'txt');
         funcs.save.refresh("txt");
         funcs.ajax.send({"command": "save", "data": doc});
       } 
       else if (word == "logout.") {
-        funcs.util.removeLine(funcs.util.findLineNumber('txt'), 'txt');
+        funcs.util.removeFromLine(word, 'txt');
         funcs.ajax.send({"command": "logout", "data": null});
       } 
       else if (word == "help.") {
