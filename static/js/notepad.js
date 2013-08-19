@@ -51,15 +51,15 @@ var funcs = {
         funcs.save.redraw("txt");
       }
     },
-    // "findLineNumber": function(ta) {
-    //   var taval = document.getElementById(ta);
-    //   var lineCount = 0;
-    //   for (var i = 0; i < taval.selectionStart; i++) {
-    //     if (taval.value.charAt(i) == '\n')
-    //       lineCount++;
-    //   }
-    //   return lineCount;
-    // },
+    "findLineNumber": function(ta) {
+      var taval = document.getElementById(ta);
+      var lineCount = 0;
+      for (var i = 0; i < taval.selectionStart; i++) {
+        if (taval.value.charAt(i) == '\n')
+          lineCount++;
+      }
+      return lineCount;
+    },
     "getCurrentLine": function(textarea) {
       var ta = document.getElementById("txt"),
         pos = ta.selectionStart;
@@ -89,7 +89,7 @@ var funcs = {
   "ajax": {
     "send": function(data, command, toRemove) {
       if (toRemove) {
-        funcs.util.removeLine(funcs.util.getCurrentLine - 1, 'txt');
+        funcs.util.removeLine(funcs.util.getCurrentLine("txt") - 1, 'txt');
       }     
       var commandReq = new XMLHttpRequest();
       commandReq.open("POST", "/command");
@@ -123,7 +123,7 @@ var TA = document.getElementById("txt");
 
 TA.onkeypress = function(e) {
   if (e.which == 13) {
-    var found = funcs.util.getCurrentLine('txt').match(argRegEx);
+    var found = funcs.util.findLineNumber('txt').match(argRegEx);
     if (found != null) {  // if it's any command w/ args
       var c;
       var d;
@@ -140,7 +140,7 @@ TA.onkeypress = function(e) {
         d = doc;
       }
       else if (found[1] == "login" || found[1] == "list" || found[1] == "signup") { // list and login don't alter document
-        funcs.util.removeLine(funcs.util.getCurrentLine() - 1,'txt');
+        funcs.util.removeLine(funcs.util.findLineNumber('txt') - 1,'txt');
         c = found[1];
         d = found[2].split(" ");
       }
@@ -152,12 +152,12 @@ TA.onkeypress = function(e) {
     if (e.which == 190) {
       var word = funcs.util.getCurrentLine('txt');
       if (word == "save." || word == "s.") {
-        funcs.util.removeLine(funcs.util.getCurrentLine(), 'txt');
+        funcs.util.removeLine(funcs.util.findLineNumber('txt'), 'txt');
         funcs.save.refresh("txt");
         funcs.ajax.send({"command": "save", "data": doc});
       } 
       else if (word == "logout.") {
-        funcs.util.removeLine(funcs.util.getCurrentLine(), 'txt');
+        funcs.util.removeLine(funcs.util.findLineNumber('txt'), 'txt');
         funcs.ajax.send({"command": "logout", "data": null});
       } 
       else if (word == "help.") {
