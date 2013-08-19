@@ -25,17 +25,17 @@ var User = mongoose.model('User', userSchema);
 exports.post = function (req, res) {
   switch(req.body.command) {
     case "login":
-      signInUser(req.body.data[0], req.body.data[1], res);
+      logInUser(req.body.data[0], req.body.data[1], res);
       break;
     case "signup":
       createNewUser(req.body.data[0], req.body.data[1], res);
       break;
     case "list":
-      getListOfDocs(req.body.data, res, "");
+      getListOfDocs(req.body.data, res, req.cookies.name);
       break;
     case "load":
       // replace the contents of the page with the contents of the requested document.
-      loadDoc(req.body.data, res, "");
+      loadDoc(req.body.data, res, req.cookies.name);
       break;
     case "title":
       // N/a
@@ -44,7 +44,7 @@ exports.post = function (req, res) {
       // Nothing should go here...
       break;
     case "save":
-        createOrEditDoc(req.body.data, res, ""); // Create a new document or just update an existing one
+        createOrEditDoc(req.body.data, res, req.cookies.name); // Create a new document or just update an existing one
       break;
     case "logout":
       // Delete the cookie containing the logged in username, logging out the user.
@@ -60,7 +60,7 @@ function sendToClient(res, ajaxResponse) {
   res.send(JSON.stringify(ajaxResponse));
 }
 
-function signInUser(name, pswd, res) {
+function logInUser(name, pswd, res) {
   mongoose.connect("mongodb://localhost/test");
   var db = mongoose.connection;
   db.once("open", function() {
@@ -75,7 +75,7 @@ function signInUser(name, pswd, res) {
 
           if (validate.makePswdHash(name, pswd, s) == usr.hash) {
             mongoose.disconnect(function() {
-              res.cookie({"name": name});
+              res.cookie("name", name);
               sendToClient(res, {});
             });
           } else {
@@ -112,7 +112,7 @@ function createNewUser(name, pswd, res) {
           u.save(function(err) {
             if (!err) {
               mongoose.disconnect(function() {
-                res.cookie("name", name, {signed: true});
+                res.cookie("name", name);
                 sendToClient(res, {})
               });
             } else {
