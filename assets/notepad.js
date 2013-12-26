@@ -1,136 +1,121 @@
-
-/*
-  * Some conventions:
-    * When a textarea is being passed into a function, it's always passed in as the string
-    * of the area's id.
-*/
-
-var funcs = {
-  "save": {
-    "refresh": function(ta) {
-      this.update(ta);
-      this.redraw(ta);
-    },
-    "update": function(ta) {
-      doc = document.getElementById(ta).value.split("\n");
-    },
-    "redraw": function(ta) {
-      document.getElementById(ta).value = doc.join('\n');
-    },
-    "set": function(str, ta) {
-      document.getElementById(ta).value = str;
-    }
-  },
-  "util": {
-    "isTempDoc": false, 
-    "insertAtLine": function(text, ta, c, useTempDoc) {
-      funcs.util.removeCommandFromTxt(c, ta);
-      funcs.save.update(ta);
-      this.isTempDoc = useTempDoc;
-      var lineNum = this.findLineNumber(ta);
-      var taval = document.getElementById(ta).value;
-      var whatToInsert = text.split('\n');
-
-
-      if (useTempDoc) {
-        var tempDoc = taval.split("\n");
-
-        for (var i = 0; i < whatToInsert.length; i++) {
-          tempDoc.splice(i + lineNum, 0, whatToInsert[i]);
-        }
-        document.getElementById(ta).value = tempDoc.join("\n");
-      } else {
-        for (var i = 0; i < whatToInsert.length; i++) {
-          doc.splice(i + lineNum, 0, whatToInsert[i]);
-        }
-        funcs.save.redraw("txt");
-      }
-    },
-    "findLineNumber": function(ta) {
-      var taval = document.getElementById(ta);
-      var lineCount = 0;
-      for (var i = 0; i < taval.selectionStart; i++) {
-        if (taval.value.charAt(i) == '\n')
-          lineCount++;
-      }
-      return lineCount;
-    },
-    "current_line": function(textarea) {
-      var ta = document.getElementById(textarea),
-        pos = ta.selectionStart;
-        taval = ta.value;
-        start = taval.lastIndexOf('\n', pos - 1) + 1,
-        end = taval.indexOf('\n', pos);
-      if (end == -1)
-        end = taval.length;
-      return taval.substr(start, end - start);
-    },
-    "removeCommandFromTxt": function(command, ta) {
-      // removes the command string from the text area, so it doesn't get saved with everything else.
-      var t = document.getElementById(ta);
-      var where = t.selectionStart;
-      var text = t.value;
-      t.value = [text.slice(0, where - command.length - 1), text.slice(where + 1)].join('');
-    }
-  },
-  "ajax": {
-    "send": function(data) {
-      console.log(data); // TODO: write backend code
-      if(data.command == "list")
-        funcs.util.insertAtLine("doc1\ndoc3\ndoc5\n", "txt", "this.", false);
-    }
-  }
-};
-
 var strs = {
   "help": "here are the commands:\n - login: [username] [pasword]\n\t- lets you login to the service.\n- list: [tag]\n\t- List all documents accessable to you on SimplestNote, use the 'all' tag for all documents.\n- this.\n\t- Type this command on the line of the file you want to open after calling list, and the file will be opened.\n- title: [title]\n\t- adds a title to the document. Note: title can only be one word.\n- tag: [tags]\n\t- adds tags to a document.\n- save.\n\t- Saves the document.\n- logout.\n\t- pretty self-explanatory.\n- help.\n\t- Shows the help for all the commands.\n- about.\n\t- Don't really have to explain that one either.\npress space to remove the help.",
   "about": "SimplestNote\n------------\ntitle. tag. save. pretty simple.\n\nSimplestNote was created by 14 year old Davis Haupt. You can check the project out on github[1], and if you really like it, you can donate[2]!\n[1]: https://github.com/dbh937/SimplestNote\n[2]: insert paypal here.\npress space to make this go away."
 }
 
-var doc = [];
-var argRegEx = /(login|list|tag|title):\s([\w\d\s]+)/;
-var thisRegEx = /^([\w\d-]+)\sthis.$/;
-var TA = document.getElementById("txt");
+var doc = { 
+            "title": "", 
+            "tags": [], 
+            "content": []
+          }; // The document object.
 
-  TA.onkeypress = function(e) {
-    if (e.which == 13) {
-      var found = funcs.util.current_line('txt').match(argRegEx);
-      if (found != null) {
-        funcs.ajax.send({"command": found[1], "data": found[2].split(" ")});
-      } else {
-        var foundThis = funcs.util.current_line('txt').match(thisRegEx);
-        if (foundThis != null) {
-          funcs.ajax.send({"command": "load", "data": foundThis[1]});
+var temp = false;
+
+var argRegEx = /(list|tag|title):\s([\w\d\s-]+)/; // matches the command keywords, a space and then any combo of letters, numbers, and dashes. Spaces separate args.
+var thisRegEx = /^([\w\d-]+)\sthis.$/;
+var ta = document.getElementById("txt");
+
+ta.onkeypress = function(e) {
+  if (e.which == 13) { // Return key pressed
+    var found = getCurrentLineVal('txt').match(argRegEx);
+    if (found != null) { // if line matches for the list, tag or title commands
+      
+      if (found[1] == "title") {
+        doc.title = found[2].split(" ")[0]; // First argument of the title command
+      } 
+      else if (found[1] == "tag") {
+        doc.tags.concat(found[2].split(" "));
+      } 
+      else if (found[1] == "list") {
+        if (found[2] == "all") {
+          // TODO: display list of files
+        } else {
+          // TODO: implement sorting by tags
         }
       }
 
-    }
-  };
-  TA.onkeyup = function(e) {
-    if (e.which == 190) {
-      var word = funcs.util.current_line('txt');
-      if (word == "save.") {
-        funcs.util.removeCommandFromTxt(word, "txt");
-        funcs.save.refresh("txt");
-        funcs.ajax.send({"command": "save", "data": doc});
-      } else if (word == "logout.") {
-        funcs.ajax.send({"command": "logout", "data": null});
-      } else if (word == "this.") {
-        console.log("this!");
-      } else if (word == "help.") {
-        funcs.util.insertAtLine(strs.help, "txt", word, true);
-      } else if (word == "about.") {
-        funcs.util.insertAtLine(strs.about, "txt", word, true);
-      } else if (word == "doc.") {
-        console.log(doc);
-        funcs.util.removeCommandFromTxt(word, "txt");
-      } else if (word == "clear.") {
-        document.getElementById("txt").value = "";
-        funcs.save.refresh("txt");
+    } else {
+      var foundThis = funcs.util.current_line('txt').match(thisRegEx);
+      if (foundThis != null) {
+        var fileName == foundThis[1];
+        // Do something with fileName to open the file.
       }
-    } else if (e.which == 32 && funcs.util.isTempDoc) {
-      funcs.save.redraw("txt");
-      funcs.util.isTempDoc = false;
-    } 
+    }
 
-  };
+  }
+};
+ta.onkeyup = function(e) {
+  if (e.which == 190) {
+    var word = funcs.util.current_line();
+    if (word == "save.") {
+      removeStrFromCurrentPosition(word);
+      updateDoc();
+    } 
+    else if (word == "help.") {
+      ta.value = strs.help;
+      temp = true;
+    } 
+    else if (word == "about.") {
+      ta.value = strs.about;
+      temp = true;
+    } 
+  } 
+  else if (temp) { // If key pressed when the about or help screens are up
+    // put the regular document back.
+    redrawTA();
+    temp = false;
+  } 
+};
+
+
+function updateDoc() {
+  // modify the doc object to reflect what is in the textarea
+  doc.content = ta.value.split("\n");
+}
+
+function redrawTA() {
+  // modify the textarea to reflect the 'doc' object
+  ta.value = doc.content.join('\n');
+}
+
+function insertAtLine(text) {
+  var lineNum = getLineNumber(ta);
+  var taval = ta.value;
+  var whatToInsert = text.split('\n');
+
+  for (var i = 0; i < whatToInsert.length; i++) {
+    doc.splice(i + lineNum, 0, whatToInsert[i]);
+  }
+  save.redraw("txt");
+}
+
+function getLineNumber() {
+  var cursor = ta.selectionStart;
+  var taval = ta;
+  var lineCount = 0;
+
+  for (var i = 0; i < taval.selectionStart; i++) {
+    if (ta.charAt(i) == '\n')
+      lineCount++;
+  }
+  return lineCount;
+}
+
+function getCurrentLineVal() {
+  // returns the value of the line where the cursor is located
+
+  var pos = ta.selectionStart;
+  var taval = ta.value;
+  var start = taval.lastIndexOf('\n', pos - 1) + 1,
+  var end = taval.indexOf('\n', pos);
+  
+  if (end == -1)
+    end = taval.length;
+  return taval.substr(start, end - start);
+}
+
+function removeStrFromCurrentPosition(s) {
+  var where = t.selectionStart;
+  var text = t.value;
+  ta.value = [text.slice(0, where - s.length - 1), text.slice(where + 1)].join('');
+}
