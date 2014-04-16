@@ -1,6 +1,6 @@
 var strs = {
-  "help": "here are the commands:\n - login: [username] [pasword]\n\t- lets you login to the service.\n- list: [tag]\n\t- List all documents accessable to you on SimplestNote, use the 'all' tag for all documents.\n- this.\n\t- Type this command on the line of the file you want to open after calling list, and the file will be opened.\n- title: [title]\n\t- adds a title to the document. Note: title can only be one word.\n- tag: [tags]\n\t- adds tags to a document.\n- save.\n\t- Saves the document.\n- logout.\n\t- pretty self-explanatory.\n- help.\n\t- Shows the help for all the commands.\n- about.\n\t- Don't really have to explain that one either.\npress space to remove the help.",
-  "about": "SimplestNote\n------------\ntitle. tag. save. pretty simple.\n\nSimplestNote was created by 14 year old Davis Haupt. You can check the project out on github[1], and if you really like it, you can donate[2]!\n[1]: https://github.com/dbh937/SimplestNote\n[2]: insert paypal here.\npress space to make this go away."
+  "help": "here are the commands:\n- list: [tag]\n\t- List all documents accessable to you on SimplestNote, use the 'all' tag for all documents.\n- this.\n\t- Type this command on the line of the file you want to open after calling list, and the file will be opened.\n- title: [title]\n\t- adds a title to the document. Note: title can only be one word.\n- tag: [tags]\n\t- adds tags to a document.\n- save.\n\t- Saves the document.\n- help.\n\t- Shows the help for all the commands.\n- about.\n\t- Don't really have to explain that one.\npress any key to remove the help.",
+  "about": "SimplestNote\n------------\ntitle. tag. save. pretty simple.\n\nSimplestNote was created by Davis Haupt. You can check the project out on github[1], and if you really like it, you can donate[2]!\n[1]: https://github.com/dbh937/SimplestNote\n[2]: BTC: 1MV7hQeuM1eDYKeiVLSmzvD8gGk9efXgTC \npress any key to make this go away."
 }
 
 var doc = { 
@@ -11,9 +11,10 @@ var doc = {
 
 var temp = false;
 
+var ta = document.getElementById("txt");
+
 var argRegEx = /(list|tag|title):\s([\w\d\s-]+)/; // matches the command keywords, a space and then any combo of letters, numbers, and dashes. Spaces separate args.
 var thisRegEx = /^([\w\d-]+)\sthis.$/;
-var ta = document.getElementById("txt");
 
 ta.onkeypress = function(e) {
   if (e.which == 13) { // Return key pressed
@@ -35,10 +36,10 @@ ta.onkeypress = function(e) {
       }
 
     } else {
-      var foundThis = funcs.util.current_line('txt').match(thisRegEx);
+      var foundThis = getCurrentLineVal('txt').match(thisRegEx);
       if (foundThis != null) {
-        var fileName == foundThis[1];
-        // Do something with fileName to open the file.
+        var fileName = foundThis[1];
+        // Do something with filename to open the file.
       }
     }
 
@@ -46,7 +47,7 @@ ta.onkeypress = function(e) {
 };
 ta.onkeyup = function(e) {
   if (e.which == 190) {
-    var word = funcs.util.current_line();
+    var word = getCurrentLineVal();
     if (word == "save.") {
       removeStrFromCurrentPosition(word);
       updateDoc();
@@ -107,7 +108,7 @@ function getCurrentLineVal() {
   var pos = ta.selectionStart;
   var taval = ta.value;
   var start = taval.lastIndexOf('\n', pos - 1) + 1,
-  var end = taval.indexOf('\n', pos);
+   end = taval.indexOf('\n', pos);
   
   if (end == -1)
     end = taval.length;
@@ -115,7 +116,7 @@ function getCurrentLineVal() {
 }
 
 function removeStrFromCurrentPosition(s) {
-  var where = t.selectionStart;
-  var text = t.value;
+  var where = ta.selectionStart;
+  var text = ta.value;
   ta.value = [text.slice(0, where - s.length - 1), text.slice(where + 1)].join('');
 }
