@@ -20,7 +20,6 @@ ta.onkeypress = function(e) {
   if (e.which == 13) { // Return key pressed
     var found = getCurrentLineVal('txt').match(argRegEx);
     if (found != null) { // if line matches for the list, tag or title commands
-      
       if (found[1] == "title") {
         doc.title = found[2].split(" ")[0]; // First argument of the title command
       } 
@@ -86,7 +85,7 @@ function insertAtLine(text) {
   for (var i = 0; i < whatToInsert.length; i++) {
     doc.splice(i + lineNum, 0, whatToInsert[i]);
   }
-  save.redraw("txt");
+  redrawTA("txt");
 }
 
 function getLineNumber() {
