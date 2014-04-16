@@ -132,5 +132,4 @@ var TA = document.getElementById("txt");
       funcs.save.redraw("txt");
       funcs.util.isTempDoc = false;
     } 
-
   };
